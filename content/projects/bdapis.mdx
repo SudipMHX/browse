@@ -1,0 +1,91 @@
+---
+title: BD APIs
+description: >-
+  Free & open-source REST API for Bangladesh locations — Divisions, Districts,
+  Upazilas, Thanas, Post Offices & Post Codes in both English and Bangla.
+github: 'https://github.com/AbmSourav/bdapis'
+website: 'https://bdapis.com'
+author: Keramot UL Islam
+tags:
+  - nodejs
+  - express
+  - mongodb
+  - mongoose
+  - rest-api
+  - bangladesh
+  - location
+  - api
+featured: true
+status: active
+year: 2026
+coverImage: /images/projects/bdapis.png
+githubStats:
+  stars: 96
+  forks: 25
+  lastUpdated: '2025-09-08T06:44:13Z'
+  language: JavaScript
+---
+
+# BD APIs
+
+BD API is a powerful REST API service that provides comprehensive location data for Bangladesh. It includes Divisions, Districts, Upazilas, Thanas, Post Offices, and Post Codes — all available in **both English and Bangla**.
+
+**v1.x** is open-source (MVP) and will remain free forever. The project is built with modern technologies and is actively maintained.
+
+## Key Features
+
+- Complete Bangladesh administrative hierarchy (Division → District → Upazila → Thana → Post Office)
+- Bilingual support (English + Bangla)
+- Fast and reliable endpoints
+- Available on RapidAPI marketplace
+- Docker support for easy deployment
+- MongoDB + Prisma schema support
+- Public documentation at [bdapis.com](https://bdapis.com)
+
+## Tech Stack
+
+- **Backend**: Node.js + Express.js
+- **Database**: MongoDB (with Mongoose & Prisma)
+- **Deployment**: Docker, Heroku, Cyclic
+- **Languages**: JavaScript, EJS, Shell, CSS
+
+## Getting Started
+
+```bash
+git clone https://github.com/AbmSourav/bdapis.git
+cd bdapis
+cp .env-example .env
+# Add your MongoDB credentials in .env
+npm install
+npm run dev
+```
+
+### Using Docker (Recommended)
+
+```bash
+docker-compose up -d --build
+```
+
+## Example Usage
+
+```bash
+# Get all divisions
+GET https://bdapis.com/api/v1.2/divisions
+
+# Get districts of a division
+GET https://bdapis.com/api/v1.2/division/dhaka
+
+# Get all post offices
+GET https://bdapis.com/api/v1.2/postOffice
+```
+
+## Links
+
+- **Live API**: [https://bdapis.com](https://bdapis.com)
+- **Full Documentation**: [bdapis.com](https://bdapis.com)
+- **RapidAPI**: Search for "BDapi" on RapidAPI
+- **GitHub**: [AbmSourav/bdapis](https://github.com/AbmSourav/bdapis)
+
+---
+
+**Made with ❤️ for Bangladeshi developers**

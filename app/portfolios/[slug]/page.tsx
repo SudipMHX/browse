@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils"
 import { PortfolioCard } from "@/components/portfolio-card"
 import Link from "next/link"
 
+export const dynamicParams = false
+
 export async function generateStaticParams() {
   const portfolios = await getPortfolios()
   return portfolios.map((p) => ({

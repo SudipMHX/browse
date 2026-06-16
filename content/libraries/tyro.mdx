@@ -1,0 +1,119 @@
+---
+title: Tyro
+description: >-
+  Powerful Authentication, Authorization, Role & Privilege Management for
+  Laravel 12 & 13 — a complete Swiss Army knife for auth and access control.
+github: 'https://github.com/hasinhayder/tyro'
+author: Hasin Hayder
+tags:
+  - laravel
+  - php
+  - authentication
+  - authorization
+  - rbac
+  - sanctum
+featured: true
+year: 2026
+githubStats:
+  stars: 678
+  forks: 49
+  lastUpdated: '2026-06-15T10:11:45Z'
+  language: PHP
+---
+
+# Tyro
+
+**Tyro** is a comprehensive Authentication, Authorization, and Role & Privilege Management solution for Laravel. It acts as a **Swiss Army knife** that handles everything from user authentication and fine-grained RBAC to user suspension workflows, audit trails, and 40+ Artisan commands.
+
+Whether you're building an API, a traditional web app, or both, Tyro saves you weeks of development time by providing production-ready auth infrastructure out of the box.
+
+## Installation
+
+```bash
+composer require hasinhayder/tyro
+```
+
+### Quick Start
+
+```bash
+php artisan tyro:sys-install
+```
+
+This single command sets up Sanctum, runs migrations, seeds default roles/privileges, and prepares your User model.
+
+## Usage
+
+### Prepare User Model (if not using sys-install)
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
+use HasinHayder\Tyro\Concerns\HasTyroRoles;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasTyroRoles;
+}
+```
+
+### Checking Permissions
+
+```php
+$user = auth()->user();
+
+// Role checks
+$user->hasRole('admin');
+$user->hasRoles(['admin', 'editor']);
+$user->hasAnyRole(['admin', 'moderator']);
+
+// Privilege checks (Laravel Gate compatible)
+$user->can('reports.run');
+$user->hasPrivileges(['reports.run', 'billing.view']);
+
+// Suspension
+$user->suspend('Pending review');
+$user->isSuspended();
+```
+
+### Blade Directives
+
+```blade
+@userCan('admin')
+    <div>Admin content here</div>
+@enduserCan
+
+@hasRole('editor')
+    <p>Editor dashboard</p>
+@endhasRole
+
+@hasAnyRole('admin', 'moderator')
+    <!-- Management tools -->
+@endhasAnyRole
+```
+
+## Key Features
+
+- **Complete RBAC System** — Roles + fine-grained Privileges
+- **40+ Artisan Commands** — Manage users, roles, privileges, tokens, and suspensions from CLI
+- **Sanctum Integration** — Automatic token abilities and revocation on suspension
+- **User Suspension Workflows** — Freeze accounts with reason + instant token revocation
+- **Audit Trail** — Track all admin actions
+- **Blade Directives** — 7 convenient directives for views
+- **Optional API Routes** — Ready-made REST endpoints (can be disabled)
+- **Zero Lock-in** — Fully customizable and publishable assets
+
+## Why Tyro?
+
+Most auth packages only solve basic login. Tyro gives you a **full production-grade access control system** including roles, privileges, suspension management, audit logs, and developer-friendly tools — all deeply integrated with Laravel’s ecosystem.
+
+Perfect for SaaS platforms, admin panels, APIs, and any application that needs robust permission management.
+
+## Links
+
+- [GitHub Repository](https://github.com/hasinhayder/tyro)
+- [Tyro Labs](https://tyrolabs.dev/) — Complete Auth & Admin Platform
+- Related packages: `tyro-login`, `tyro-dashboard`
