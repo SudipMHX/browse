@@ -19,9 +19,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          # GH_PAT allows the push to trigger downstream workflows (e.g. Vercel).
-          # Falls back to GITHUB_TOKEN — commits will include [skip ci] anyway.
-          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          # BROWSE_TOKEN allows the push to trigger downstream workflows (e.g. Vercel).
+          # Falls back to BROWSE_TOKEN — commits will include [skip ci] anyway.
+          token: ${{ secrets.BROWSE_TOKEN}}
           fetch-depth: 2
 
       - name: Setup Node.js
@@ -53,7 +53,7 @@ jobs:
       - name: Run GitHub stats enrichment
         if: steps.changed.outputs.files != ''
         env:
-          GH_PAT: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          BROWSE_TOKEN: ${{ secrets.BROWSE_TOKEN}}
           ENRICH_MODE: changed
           CHANGED_FILES: ${{ steps.changed.outputs.files }}
         run: node scripts/enrich-stats.js

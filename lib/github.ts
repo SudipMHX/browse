@@ -22,8 +22,8 @@ function buildHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
   }
-  if (process.env.GITHUB_TOKEN) {
-    headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`
+  if (process.env.BROWSE_TOKEN) {
+    headers["Authorization"] = `Bearer ${process.env.BROWSE_TOKEN}`
   }
   return headers
 }

@@ -5,8 +5,8 @@
  * and writes the results back into each file's YAML frontmatter.
  *
  * Environment variables:
- *   GH_PAT         — GitHub Personal Access Token (required for authenticated requests).
- *                    In GitHub Actions this is set to: secrets.GH_PAT || secrets.GITHUB_TOKEN
+ *   BROWSE_TOKEN         — GitHub Personal Access Token (required for authenticated requests).
+ *                    In GitHub Actions this is set to: secrets.BROWSE_TOKEN || secrets.BROWSE_TOKEN
  *   ENRICH_MODE    — "changed" (default) or "full"
  *   CHANGED_FILES  — comma-separated list of paths (used when mode=changed)
  *
@@ -25,12 +25,12 @@ const CATEGORIES = ["projects", "portfolios", "tools", "libraries"]
 const API_DELAY_MS = 300 // ms between API calls to avoid secondary rate limits
 
 // Single token variable. In GitHub Actions, the workflow sets:
-//   GH_PAT: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-// When running locally, set GH_PAT in your shell or .env.
-const GH_PAT = process.env.GH_PAT || ""
+//   BROWSE_TOKEN: ${{ secrets.BROWSE_TOKEN || secrets.BROWSE_TOKEN }}
+// When running locally, set BROWSE_TOKEN in your shell or .env.
+const BROWSE_TOKEN = process.env.BROWSE_TOKEN || ""
 
-if (!GH_PAT) {
-  console.warn("⚠️  No GH_PAT found — API calls will be unauthenticated (60 req/hr limit)")
+if (!BROWSE_TOKEN) {
+  console.warn("⚠️  No BROWSE_TOKEN found — API calls will be unauthenticated (60 req/hr limit)")
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 function buildHeaders() {
   const headers = { Accept: "application/vnd.github+json" }
-  if (GH_PAT) headers["Authorization"] = `Bearer ${GH_PAT}`
+  if (BROWSE_TOKEN) headers["Authorization"] = `Bearer ${BROWSE_TOKEN}`
   return headers
 }
 
