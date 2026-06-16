@@ -1,0 +1,73 @@
+name: Enrich GitHub Stats
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/**/*.mdx'
+      - 'content/**/*.md'
+
+  schedule:
+    - cron: '0 3 * * 0'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'changed'
+        type: choice
+        options:
+          - changed
+          - full
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Detect changed MDX files
+        id: detect
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]] || [[ "${{ github.event.inputs.mode }}" == "full" ]]; then
+            echo "mode=full" >> "$GITHUB_OUTPUT"
+            echo "📦 Running in FULL mode — all MDX files will be processed"
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '^content/.*\.(mdx|md)$' | tr '\n' ',' | sed 's/,$//')
+            echo "changed_files=$CHANGED" >> "$GITHUB_OUTPUT"
+            echo "mode=changed" >> "$GITHUB_OUTPUT"
+            echo "📝 Changed files: $CHANGED"
+          fi
+
+      - name: Run enrichment script
+        env:
+          GH_PAT: ${{ secrets.BOT_TOKEN }}
+        run: node scripts/enrich-stats.js
+
+      - name: Commit enriched stats
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore(stats): auto-enrich GitHub stats [skip ci]'
+          file_pattern: 'content/**/*.mdx content/**/*.md'
+          commit_user_name: 'browse-bot'
+          commit_user_email: 'bot@browse.pro.bd'

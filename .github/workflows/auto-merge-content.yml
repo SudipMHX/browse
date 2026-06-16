@@ -1,0 +1,112 @@
+name: Auto-Merge Content PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check if PR only modifies content files
+        id: verify
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+
+            const contentFiles = files.filter(f => f.filename.startsWith('content/'));
+            const nonContentFiles = files.filter(f => !f.filename.startsWith('content/'));
+
+            console.log(`📁 Content files (${contentFiles.length}): ${contentFiles.map(f => f.filename).join(', ')}`);
+
+            if (nonContentFiles.length > 0) {
+              console.log(`🚫 Non-content files found: ${nonContentFiles.map(f => f.filename).join(', ')}`);
+              core.setOutput('safe', 'false');
+              return;
+            }
+
+            if (contentFiles.length === 0) {
+              console.log('⚠️ No content files found in PR');
+              core.setOutput('safe', 'false');
+              return;
+            }
+
+            const allowedDirs = ['content/projects/', 'content/portfolios/', 'content/tools/', 'content/libraries/'];
+            const invalidFiles = contentFiles.filter(f =>
+              !allowedDirs.some(dir => f.filename.startsWith(dir))
+            );
+
+            if (invalidFiles.length > 0) {
+              console.log(`🚫 Files outside allowed content dirs: ${invalidFiles.map(f => f.filename).join(', ')}`);
+              core.setOutput('safe', 'false');
+              return;
+            }
+
+            console.log(`✅ All ${contentFiles.length} file(s) are valid content submissions`);
+            core.setOutput('safe', 'true');
+
+      - name: Enable auto-merge
+        if: steps.verify.outputs.safe == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          echo "🔀 Enabling auto-merge for PR #${PR_NUMBER}..."
+          gh pr merge "$PR_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --auto \
+            --squash \
+            --delete-branch
+
+      - name: Label PR
+        if: steps.verify.outputs.safe == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: ['auto-merge', 'content']
+              });
+            } catch (e) {
+              console.log(`⚠️ Could not add labels: ${e.message}`);
+            }
+
+      - name: Comment on unsafe PR
+        if: steps.verify.outputs.safe == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('manual review required')
+            );
+
+            if (!botComment) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `👋 Thanks for your contribution!\n\n⚠️ **manual review required** — this PR modifies files outside the \`content/\` directory, so a maintainer needs to review it manually.\n\nContent-only PRs (adding projects, portfolios, tools, or libraries) are auto-merged once checks pass.`
+              });
+            }
